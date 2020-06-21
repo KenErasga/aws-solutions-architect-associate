@@ -883,3 +883,32 @@ Two types queues
     - authentication and account recovery
 - identity pool
     - authorise access to your aws resources
+
+## Serverless
+
+## traditional vs serverless
+
+traditional
+user -> elb -> ec2 instances -> rds
+
+bottlenecking at rds, unless if you are using aurora
+
+serverless
+api gateway -> lambda -> dynamodb
+
+best way to architect and sot saving -> serverless 
+
+### Lambda
+
+- lambda scales out (not up) automatically
+- independent 1event = 1funciton
+- serverless
+- can trigger other lambda functions, 1 event can trigger x functions
+- aws x ray can debug what is happening
+- can do thing globally, back uo s3 buckets 
+- know your triggers
+
+
+
+
+
