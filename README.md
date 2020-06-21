@@ -2,7 +2,7 @@
 This is my notes for AWS Solutions Architect Associate Exam
 
 
-## IAM
+## 1. IAM
 
 Consist of:
 
@@ -152,7 +152,7 @@ S3 fundamentals:
 S3 FAQs
 
 
-## EC2
+## 2. EC2
 
 Amazon Elastic Compute Cloud. Resizebale compute capacity in the cloud. Reduces time required to obtain and boot new server instaces to minutes, quickly scale up or down as your computing req change.
 
@@ -355,7 +355,7 @@ CloudWatch monitors performance and CloudTrail monitors API calss in the AWS pla
 - can't merge PG
 - can't move instance into a PG. can create AMI from existing instance, then launched from the ami into a pg
 
-## Databases
+## 3. Databases
 
 - RDS (OLTP)
     - SQL
@@ -444,7 +444,7 @@ MUltiAZ
 - backups and restore of redis
 - scale horizontally, use memcached
 
-## Route53 (DNS)
+## 4. Route53 (DNS)
 
 - ELBs do not have predefined IPv4 addresses, you resolve them using a DNS name
 - Alias Record = telephone book with names and numbers
@@ -485,7 +485,7 @@ Health checks
 - if record fails helth check, it will remove from route53 unitl health checks passes
 - set SNS notifications to alert you if a health check failed
 
-## VPC
+## 5. VPC
 
 - VPC = logical datacenter in AWS
 - consists of IGW's (or vitual private gateways (VPG)), Route tables, Network Access Control Lists, Subnets and Security Groupds
@@ -607,3 +607,279 @@ two types of vpc endpoitns
 - gateway endpoints
     - s3
     - dynamodb
+
+## 6. Elastic Load Balancer
+
+physical or virtual device that balance the load
+
+### Types of ELB
+
+- Applciation Load Balancers 
+    - suited for HTTP and HTTPS traffic
+    - Operate in Layer 7
+    - Application aware = can see aplications inside
+    - intelligent and can create advanced request routing, sending specified requests to specific web servers
+    - Tesla Model X
+- Network Load Balancers
+    - suited for TCP traffic where extreme performance is required
+    - Operate in Layer 4 (connection lecel)
+    - Capable of handling millions of requests per second, while maintaining ultra-low latencies
+    - use for extreme performance
+    - Tesla Roadster
+- Classic Load Balancers
+    - legacy ELB
+    - use for HTTP/HTTPS apps
+    - level 7
+    - features:
+        - X-Forwarded
+        - sticky sessions
+    - can use strict layer 4 for apps that rely on the TCP protocol
+    - not intelligent
+    - dont care how its routed
+    - 504 (Gateway timeout) error if apps stops responding
+        - meaning app have issues
+        - web server or database layer
+        - identify where app is failing and scale it up or out where possible
+
+- X-fowarded-For HEader
+    - uses for forwarding the ip address of the user 
+
+- LAB:
+    - create 2 ec2 instances in two different AZ
+        - defaukt vpc
+        - add bootstrap script to both: with yum update and creates an html file
+        - add storage 
+        - tags
+    - Create calssic ELB
+        - can enable advanced vpc
+            - should have minimum of 2 
+        - use vpc
+        - configure health check
+        - have DNS name and no ip address
+    - create app elb
+        - can create routing, can view and edit rules
+
+ELB EXAM TIPS:
+- INstaqnces monitored by ELB are reported as:
+    - Inservice
+    - OutofService
+- Health Checks check the instance health by talking to it
+- have their own dns name. Never given an IP address
+
+### Advanced ELB
+
+#### Sticky Sessions
+
+- allow binding a user's session to a specific ec2 instance. Ensures all requests are sent tot he same instance
+- can enbale for app load balancers, but traffic are sent at Target Group Level
+
+EXAM TIP: 
+enbale or disable sticky session depending on scenario
+
+#### Cross Zone Load Balancing
+
+enables load balancing between AZ to AZ
+
+#### Path Patterns
+
+- can create listener with rules to forward requests based on the url path.
+- AKA path based routing
+- microservices? route traffic to multiple back end service using PBR
+- eg: route general requests to one target group and requests to render images to another target group
+
+### Autoscaling theory
+
+#### 3 Components
+
+1. Groups: logical component
+    - webserver group
+    - application  group
+    - database group
+2. Configuration Templates
+    - have launch template or configuration for it's ec2 instances
+    - can specify information:
+        - AMI ID
+        - INsurance type
+        - key pair
+        - security groups
+        - block device mapping for your instances
+3. Scaling Options
+    - provides several ways to scale the Auto Scaling Groups
+    - eg: configure a group to scale based on the occurrence of specified conditions (dynamic scaling) or schedule
+    - scaling options:
+        - maintain current instance levels at all times
+        - scale manually
+            - specify max, min or desired capacity
+        - scale based on a schedule
+            - time and date
+        - based on demands
+            - popular
+            - more advanced
+            - scaling policies
+        - use predictive scaling
+            - combination predictive and dynamic scaling 
+                - proactive
+                - reactive
+
+#### Autoscaling Groups LAB
+
+provision an auto scaling group in ec2:
+
+- need a launch config
+- advanced details with bottstrap script
+- select security group
+
+- create auto scaling group
+- group size
+- can put behind ELB
+
+- can keep group as this size or scaling policies to adjust the capacity of this group
+    - eg for scale policies:
+        - scale between min 3 and  max 6 ec2 instances
+        - target value: 80% of cpu utilization (metric type)
+        - can warm up 
+
+- can add SNS notifications
+
+### HA architecture: word press
+
+- Everyhting fail
+- planb for failure
+- use multi az and multi regions wherever you can
+- diff between multi az (disaster recovery) and read replicas (performance) for rds
+- scaling out ( increase instance) and sacling up ( increase insdie ec2 resources t2 -> t6) 
+- cost element
+
+
+### Cleaning up
+
+- simulated failover with rds, can force to failover by reboot
+
+### CloudFormation LAB:
+
+Automate creation 
+
+- create a stack or use a template
+- specify details
+- options
+- review
+
+- can take time
+- did not create rds (database)
+
+- a way to completely scripting your cloud environment
+- quick start is a bunch of cloudformation templates already build by AWS solutions architects - allows complex environments created quikcly
+
+### ElasticBeanstalk LAB
+
+- create cloud environment by UI (not scripting)
+ - can upload code
+
+- quickly deploy and manage apps in aws cloud (don't have to worry about infrastructure that run thos apps)
+- simply upload your app, and it automatically handles"
+    - details of capacity provisioning
+    - load balancing
+    - scaling
+    - app health monitoring
+
+
+## Applications
+
+### SQS
+
+- access to a message queue that can be used to store messages while waiting for a computer to process them
+
+- distributed queue sytem that enables web service applications to qquickly and reliably queue messages that one component in the application generates to be consumed by another component
+
+- a queue is a temporary repo for messages that are awaiting processing
+
+- can decoubple the components of an application so they run independetly, easing managedment between components
+
+- any acomponent of a distributed application can store messages in a faill-safe queue
+
+- can contain up to 256 kb of text in any format
+- any component can later retrieve the messages programmatically using the amazon SQS API
+
+
+- acts as a buffer between component producing, saving data and the component recieving the data for processing
+    - this means the queue resolves issues that arise if the producer is producing work fast than the consumer can process it, or if the producer or consumer are only intermittently connected to the network
+
+Two types queues
+- standard queues
+    - default
+    - nearly-unlimited number of transactions/s. 
+    - gurantee that a message is delivered at least once
+    - more than one copy of a message might be delivered out fo order
+    - provide best-effort ordering, ensures that it is delivered in the same order as they are snet (not guranteed)
+
+- FIFO
+    - no duplicates
+    - exactly-once processing
+    - support message groups that allow multi ordered message groups within a single queue
+    - limited transaction 300 TPS, but have all the capabilities of standard queues
+
+ - exam tips
+    - sqs is pull based, not pushed-based
+    - 256 kb size = message
+    - kept in queue from 1 minute - 14 days; default = 4 days
+
+    - visibility timeout (max 12 hours); make it longer if process is taking longer
+    - long polling - retrieve messages from sqs queues
+        - doesn't return a response until there is something in the queue or a time out
+    - short polling returns immediately (even if queue is empty)
+    
+### SWF - work flow
+
+- SWF, workflow executions can last up to 1 year (retention period)
+- task-orient API, sqs message-oriented API
+- swf - assigned only once and is never duplicated
+- swf keeps track of all tawsks and events i application
+- swf actors
+    - workflow starters
+    - deciders
+    - activity workers
+
+### SNS
+
+- instantaneous, push based delivery (no polling)
+- simple apis and easy integration with apps
+- flexible message delivery over multi transpoiort protocols
+- inexpensive, pay as you go with no up front cost
+- web based aws management console wioffers the simplicity of a point and click interface
+- 
+
+### Elastic Transcoder
+
+- media transcoder in the cloud
+- converts files from original source format to diff formats that will play on smartphones, tablets, pcs etc
+
+### API gateway
+
+- gate wat to aws resouces
+- caching to increase pergformance
+- low cost and scales auto
+- throttle to prevent attacks
+- log results to cloudwatch
+- enable CORS for javascript / ajax
+
+### kinesis
+
+- streams
+    - data persistance: store 24 hours can go up for longer
+- firehose
+    - real time analytics: analyse data in real time and find somewhere to store it eg s3 ec2.
+- analytics
+    - uses both streams and firehose
+
+### Cognito
+
+- Federation allows users to authenticate with the Web Identity Provider
+- user authenticates first with WIP and recieves auth token, which is exchanged for a temp aws credentials allowing the, to assume an IAM role
+- Identitty broker which handles interaction between your apps and WIP
+
+- user pool
+    - user based
+    - handles registration
+    - authentication and account recovery
+- identity pool
+    - authorise access to your aws resources
